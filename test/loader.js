@@ -148,6 +148,22 @@ describe('async mode', function () {
     loader.call(context, goodSource);
   });
 
+  it('ignores dependencies matched by ignore directory regex', function (done) {
+    var options = {
+      cwd: fixturesDir,
+      ignore: /.*/g
+    };
+
+    process.argv = [ "--watch" ];
+    var callback = function () {
+      assert.equal(context.addedDirDependencies().length, 0);
+      done();
+    };
+
+    context = mock(goodSource, null, options, callback, true);
+    loader.call(context, goodSource);
+  })
+
   it('emits warnings for unknown compiler options', function (done) {
     var options = {
       cwd: fixturesDir,

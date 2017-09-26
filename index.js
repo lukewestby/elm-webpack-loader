@@ -12,7 +12,8 @@ var alreadyCompiledFiles = [];
 var defaultOptions = {
   cache: false,
   forceWatch: false,
-  yes: true
+  yes: true,
+  ignore: false
 };
 
 var getInput = function() {
@@ -56,13 +57,18 @@ var isInWatchMode = function(){
 
 /* Takes a working dir, tries to read elm-package.json, then grabs all the modules from in there
 */
-var filesToWatch = function(cwd){
+var filesToWatch = function(cwd, ignore){
   var readFile = fs.readFileSync(path.join(cwd, "elm-package.json"), 'utf8');
   var elmPackage = JSON.parse(readFile);
 
-  var paths = elmPackage["source-directories"].map(function(dir){
-    return path.join(cwd, dir);
-  });
+  var paths = elmPackage["source-directories"]
+    .filter(function(dir) {
+      if (!ignore) return true
+      return !ignore.test(dir)
+    })
+    .map(function(dir){
+      return path.join(cwd, dir);
+    });
 
   return paths;
 };
@@ -93,7 +99,7 @@ module.exports = function() {
       // watch elm-package.json
       var elmPackage = path.join(options.cwd, "elm-package.json");
       addDependencies(elmPackage);
-      var dirs = filesToWatch(options.cwd);
+      var dirs = filesToWatch(options.cwd, options.ignore);
       // watch all the dirs in elm-package.json
       addDirDependency.bind(this)(dirs);
     }
@@ -102,7 +108,12 @@ module.exports = function() {
     // otherwise return an error which is currently ignored
     var dependencies = elmCompiler.findAllDependencies(input).then(function(dependencies){
       // add each dependency to the tree
-      dependencies.map(addDependencies);
+      dependencies
+        .filter(function(dep) {
+          if (!options.ignore) return true
+          return !options.ignore.test(dep)
+        })
+        .map(addDependencies);
       return { kind: 'success', result: true };
     }).catch(function(v){
       emitError(v);
