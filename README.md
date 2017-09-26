@@ -82,7 +82,7 @@ You can add `maxInstances=8` to the loader:
   ...
 ```
 
-Set a limit to the number of maxInstances of elm that can spawned. This should be set to a number less than the number of cores your machine has. The ideal number is 1, as it will prevent Elm instances causing deadlocks. 
+Set a limit to the number of maxInstances of elm that can spawned. This should be set to a number less than the number of cores your machine has. The ideal number is 1, as it will prevent Elm instances causing deadlocks.
 
 #### Cache (default false)
 
@@ -111,6 +111,21 @@ wants to force this behaviour you can add `forceWatch=true` to the loader:
   loader: 'elm-webpack?forceWatch=true'
   ...
 ```
+
+#### Ignore
+
+```js
+  ...
+  loader: 'elm-webpack',
+  options: {
+    ignore: /generated-code/g
+  }
+  ...
+```
+
+Use a regular expression to filter certain files or directories out of the set
+of files to watch in watch mode. This helps to prevent costly recompiles when
+using tools that generate Elm code in batches.
 
 #### Upstream options
 
@@ -163,7 +178,7 @@ You can silence this warning with [noParse](https://webpack.github.io/docs/confi
 ### 4.3.0
 
 - Set maxInstances to 1
-- Patch watching behaviour 
+- Patch watching behaviour
 - Add `forceWatch` to force watch mode
 
 ### 4.2.0
